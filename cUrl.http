@@ -1,0 +1,153 @@
+### Send new message
+POST http://localhost:8080/api/v1/messages
+
+{
+    "chat_id": "string",
+    "sender_id": "string",
+    "type": "text|image",
+    "content": "string",
+    "attachments": [
+        {
+            "type": "image",
+            "size": "number",
+            "mime_type": "string"
+        }
+    ]
+}
+
+### Get messages history
+GET http://localhost:8080/api/v1/messages
+Query params:
+- chat_id: string
+- before_id: string (pagination cursor)
+- limit: number (default 50, max 100)
+
+### Read message
+PUT http://localhost:8080/api/v1/messages/{message_id}/read
+
+{
+    "user_id": "string",
+    "timestamp": "string"
+}
+
+### Create new chat
+POST http://localhost:8080/api/v1/chats
+
+{
+    "type": "personal|group",
+    "name": "string",
+    "participants": ["string"]
+}
+
+### Get chats of user
+GET http://localhost:8080/api/v1/chats
+Query params:
+- user_id: string
+- before_id: string (pagination cursor)
+- limit: number (default 50, max 100)
+
+### Add participants to chat
+PUT http://localhost:8080/api/v1/chats/{chat_id}/participants
+
+{
+    "participants": ["string"]
+}
+
+### Get status of user
+GET http://localhost:8080/api/v1/users/{user_id}/status
+
+Response:
+{
+    "status": "online|offline",
+    "last_seen": "string" // ISO timestamp
+}
+
+### Update status of user
+PUT http://localhost:8080/api/v1/users/{user_id}/status
+
+{
+    "status": "online|offline"
+}
+
+### Websocket connection
+GET ws://localhost:8080/ws
+
+{
+    "type": "connect",
+    "user_id": "string",
+    "device_id": "string"
+}
+
+### New message
+{
+    "type": "message",
+    "data": {
+        "message_id": "string",
+        "chat_id": "string",
+        "sender_id": "string",
+        "content": "string",
+        "timestamp": "string",
+        "type": "text|image"
+    }
+}
+
+### Status read receipt
+{
+    "type": "read_receipt",
+    "data": {
+        "message_id": "string",
+        "chat_id": "string",
+        "user_id": "string",
+        "timestamp": "string"
+    }
+}
+
+### User status update
+{
+    "type": "user_status",
+    "data": {
+        "user_id": "string",
+        "status": "online|offline",
+        "last_seen": "string"
+    }
+}
+
+### Typing indicator
+{
+    "type": "typing_indicator",
+    "data": {
+        "chat_id": "string",
+        "user_id": "string",
+        "typing": true // start|stop
+    }
+}
+
+### Errors
+400 Bad Request - Invalid request body
+401 Unauthorized - Invalid token
+403 Forbidden - User is not a participant of the chat
+404 Not Found - Chat or user not found
+413 Payload Too Large - Message is too large
+429 Too Many Requests - Rate limit exceeded
+500 Internal Server Error - Unexpected error
+
+{
+    "type": "error",
+    "code": "number",
+    "message": "string"
+}
+
+### API restrictions
+1) Rate limiting:
+* 100 requests per 1 minute
+* 1000 requests per 1 hour
+* 5 parallel websocket connections per user
+
+2) Message size:
+* 2000 characters for text messages
+* 1.5 MB for image messages
+
+3) Timeouts:
+* http request timeout: 30 seconds
+* websocket ping/pong: 30 seconds
+* message delivery: 3 seconds

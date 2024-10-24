@@ -1,0 +1,79 @@
+graph TB
+    subgraph Clients
+        Mobile["Mobile app"]
+        Web["Web app"]
+        Desktop["Desktop app"]
+    end
+
+    subgraph LoadBalancing["Load Balancing Layer"]
+        LB["Load balancer (Nginx)"]
+    end
+
+    subgraph ApplicationLayer["Application Layer"]
+        API["API server"]
+        WS["Websocket server"]
+    end
+
+    subgraph ServiceLayer["Service Layer"]
+        MS["Message service"]
+        US["User service"]
+        CS["Chat service"]
+        NS["Notification service"]
+        AS["Analytics service"]
+    end
+
+    subgraph QueueLayer["Message Queue Layer"]
+        MQ["Message queue"]
+    end
+
+    subgraph StorageLayer["Storage Layer"]
+        subgraph DB["Database cluster"]
+            Master["Master DB"]
+            Replica1["Replica 1"]
+            Replica2["Replica 2"]
+        end
+        Cache["Cache (Redis)"]
+        BS["Blob storage"]
+    end
+
+    subgraph CDNLayer["CDN Layer"]
+        CDN["CDN"]
+    end
+
+    Mobile --> LB
+    Web --> LB
+    Desktop --> LB
+
+    LB --> API
+    LB --> WS
+
+    API --> MS
+    API --> US
+    API --> CS
+
+    WS --> MS
+
+    MS --> MQ
+    MQ --> NS
+
+    MS --> Cache
+    US --> Cache
+    CS --> Cache
+
+    MS --> Master
+    US --> Master
+    CS --> Master
+
+    Master --> Replica1
+    Master --> Replica2
+
+    MS --> BS
+    BS --> CDN
+
+    NS --> |Push Notifications| Mobile
+    NS --> |Push Notifications| Web
+    NS --> |Push Notifications| Desktop
+
+    AS --> |Analytics| Master
+    AS --> |Analytics| Replica1
+    AS --> |Analytics| Replica2
